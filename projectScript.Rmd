@@ -1,0 +1,123 @@
+---
+title: 'Practical Machine Learning: Course Project'
+author: "Jean-Paul Courneya"
+date: "1/4/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+##Executive Summary
+Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively.
+
+Six participants were asked to perform one set of 10 repetitions of the Unilateral Dumbbell Biceps Curl in five different fashions: exactly according to the specification (Class A), throwing the elbows to the front (Class B), lifting the dumbbell only halfway (Class C), lowering the dumbbell only halfway (Class D) and throwing the hips to the front (Class E).
+
+This report describes how the data captured are used for predicting the manner in which exercise was done.
+
+The training data were divided into two groups, a training data and validation. The validation set will validate the training model with an expected out-of-sample error rate of less than 0.5%, or 99.5% accuracy which would be acceptable for testing before it is used to perform the prediction on the 20 test cases - that must have 100% accuracy. 
+
+The training model was developed using Random Forest method was able to achieve over 99.99% accuracy, or less than 0.03% out-of-sample error, and was able to predict the 20 test cases with 100% accuracy.
+
+## I - Environment Prep
+
+```{r}
+library(caret)
+library(knitr)
+library(rpart)
+library(rpart.plot)
+library(randomForest)
+library(corrplot)
+set.seed(8675309)
+```
+
+## II - Download and Pre-Process data
+
+Download data from the URL provided. When reading in the file, change invalid values to NA.
+
+### II-A - Download the Data
+
+```{r, eval=FALSE}
+trainURL <- 'https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv'
+testURL <- 'https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv'
+download.file(trainURL,destfile = 'trainset.csv')
+download.file(testURL,destfile = 'testset.csv')
+```
+
+### II-B - Read the data
+
+##### Training data
+```{r}
+training <- read.csv('trainset.csv', na.strings=c('NA','#DIV/0!',''))
+dim(training)
+```
+
+##### Testing data
+```{r}
+testing <- read.csv('testset.csv', na.strings=c('NA','#DIV/0!',''))
+dim(testing)
+```
+
+### II-C - Process the Training data
+
+##### Create a partition within the training dataset 
+```{r}
+inTrain  <- createDataPartition(training$classe, p=0.7, list=FALSE)
+TrainSet <- training[inTrain, ]
+ValidationSet  <- training[-inTrain, ]
+dim(TrainSet)
+```
+
+```{r}
+dim(ValidationSet)
+```
+
+##### Remove variables with Nearly Zero Variance
+```{r}
+
+NZV <- nearZeroVar(TrainSet)
+TrainSet <- TrainSet[, -NZV]
+ValidationSet  <- ValidationSet[, -NZV]
+dim(TrainSet)
+```
+
+```{r}
+dim(ValidationSet)
+```
+
+##### Remove variables that are mostly NA
+```{r}
+AllNA    <- sapply(TrainSet, function(x) mean(is.na(x))) > 0.95
+TrainSet <- TrainSet[, AllNA==FALSE]
+ValidationSet  <- ValidationSet[, AllNA==FALSE]
+dim(TrainSet)
+```
+
+```{r}
+dim(ValidationSet)
+```
+
+##### Remove identification only variables (columns 1 to 5)
+```{r}
+TrainSet <- TrainSet[, -(1:5)]
+ValidationSet  <- ValidationSet[, -(1:5)]
+dim(TrainSet)
+dim(ValidationSet)
+```
+
+##### Create working datasets from processed data.
+```{r}
+TrainSetWorking <- TrainSet
+ValidationSetWorking <- ValidationSet
+```
+
+## III - Correlation Analysis
+
+Take a look at the correlation among variables.
+
+```{r}
+corMatrix <- cor(TrainSetWorking[, -54])
+corrplot(corMatrix, order = "FPC", method = "color", type = "lower", 
+         tl.cex = 0.8, tl.col = rgb(0, 0, 0))
+```
+
