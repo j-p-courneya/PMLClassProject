@@ -132,7 +132,7 @@ In this step a prediction model is created using the Random Forest method.
 Because of the CPU resources required, prior to generating the model set up the code to run using all the CPU cores available. Also, even with it running on multiple cores, it will take a long time to create the prediction model.
 
 ```{r}
-fit <- train(TrainSetWorking$classe ~ ., method = "rf", data = TrainSetWorking)
+fit <- train(classe ~ ., method = "rf", data = TrainSetWorking)
 save(fit, file = "modelFit.RData")
 ```
 

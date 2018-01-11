@@ -4,3 +4,4 @@
 .Ruserdata
 testset.csv
 trainset.csv
+modelFit.RData
