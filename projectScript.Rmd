@@ -129,8 +129,6 @@ corrplot(corMatrix, order = "FPC", method = "color", type = "lower",
 
 In this step a prediction model is created using the Random Forest method.
 
-Because of the CPU resources required, prior to generating the model set up the code to run using all the CPU cores available. Also, even with it running on multiple cores, it will take a long time to create the prediction model.
-
 ```{r}
 fit <- train(classe ~ ., method = "rf", data = TrainSetWorking)
 save(fit, file = "modelFit.RData")
@@ -138,4 +136,23 @@ save(fit, file = "modelFit.RData")
 
 ## IV - Measure the Accuracy and Sample Error of the prediction model
 
-Using the training subset and create a prediction. Then measure it’s accuracy
+##### IV-A Training Data evaluation
+
+Here a prediction will be created using the training set. Then we'll measure it’s accuracy.
+
+```{r}
+predTrain <- predict(fit, TrainSetWorking)
+```
+
+```{r}
+confusionMatrix(predTrain, TrainSetWorking$classe)
+```
+
+##### IV-B Validation Data evaluation
+Now that a prediction has been made on the testing data and the accuracy has been determined to be sufficient for testing, a test will be run using the validation set to determine the ability to predict properly what activity is being done and gauge the success of the actual test data.
+
+```{r}
+predValidation <- predict(fit, ValidationSetWorking)
+confusionMatrix(predValidation, ValidationSetWorking$classe)
+```
+
