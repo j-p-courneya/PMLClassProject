@@ -127,9 +127,9 @@ corrplot(corMatrix, order = "FPC", method = "color", type = "lower",
 
 ## IV - Prediction model (using random forest)
 
-In this step a prediction model is created using the Random Forest method.
+In this step a prediction model is created using the Random Forest method. For the final knitted document I have chosen to not evaluate this chunk of code. When running the code for reproducibility this will have to be evaluated to continue processing data according to the layed out strategy.
 
-```{r}
+```{r, eval= FALSE}
 fit <- train(classe ~ ., method = "rf", data = TrainSetWorking)
 save(fit, file = "modelFit.RData")
 ```
@@ -141,6 +141,7 @@ save(fit, file = "modelFit.RData")
 Here a prediction will be created using the training set. Then we'll measure it’s accuracy.
 
 ```{r}
+load(file = "modelFit.RData", verbose = TRUE)
 predTrain <- predict(fit, TrainSetWorking)
 ```
 
@@ -154,5 +155,24 @@ Now that a prediction has been made on the testing data and the accuracy has bee
 ```{r}
 predValidation <- predict(fit, ValidationSetWorking)
 confusionMatrix(predValidation, ValidationSetWorking$classe)
+```
+Using the validation subset to test the prediction model the accuracy is high at 99%. The out of sample error rate is very low at 0.0019. 
+
+The following lists important predictors from the model. Also included is a summary of the prediction model.
+
+```{r}
+varImp(fit)
+fit$finalModel
+```
+
+With the OOB Estimated Error of .19% and the high accuracy of the model using the validation data it is safe to proceed with applying the model to the testing data
+
+## V Apply the prediction model to the test data
+
+The last thing to do is run the test data and see how good the prediction model performed. Evaluation for this chunk is turned off.
+
+```{r, eval=FALSE}
+predTesting <- predict(fit, newdata = testing)
+predTesting
 ```
 
